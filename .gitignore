@@ -1,0 +1,5 @@
+/target
+quokka-kernel.*
+quokka-sd.img
+kernel_output
+sd_output

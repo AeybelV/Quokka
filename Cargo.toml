@@ -1,0 +1,13 @@
+[package]
+name = "quokka"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+volatile-register = "0.2.2"
+
+[profile.dev]
+panic = "abort"
+
+[profile.release]
+panic = "abort"
