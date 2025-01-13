@@ -11,3 +11,10 @@ panic = "abort"
 
 [profile.release]
 panic = "abort"
+
+[features]
+
+pl011 = []                        # Enables PL011 Support
+system_console_pl011 = ["pl011"]  # Enables the PL011 as the system console
+
+default = ["system_console_pl011"]
