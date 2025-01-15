@@ -62,6 +62,8 @@ echo "========== QEMU output below =========="
 ${QEMU}  \
   -machine ${MACHINE} \
   -kernel ${KERNEL_BINARY} \
-  -nographic \
   -s \
+  -d int,cpu_reset \
+  -serial vc \
+  -monitor stdio \
   ${PAUSE_ON_ENTRY} \
