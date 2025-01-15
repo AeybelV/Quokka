@@ -20,7 +20,16 @@ lto = true    # Enables LTO
 
 [features]
 
+# UART
 pl011 = []                        # Enables PL011 Support
+
+# Architectures
+arch_arm = [] # ARM32 such as ARMv7-A, which implements AArch32
+
+# System Console
 system_console_pl011 = ["pl011"]  # Enables the PL011 as the system console
 
 default = ["system_console_pl011"]
+# Predefined machines
+qemu-system-arm_virt = ["arch_arm", "pl011"] # Targets the "virt" on qemu-system-arm
+
