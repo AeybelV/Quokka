@@ -8,9 +8,15 @@ volatile-register = "0.2.2"
 
 [profile.dev]
 panic = "abort"
+opt-level = 1 # Enables some optimizations
+debug = true  # Retain debug information
+lto = false   # Link Time Optimization (disable for debugging)
 
 [profile.release]
 panic = "abort"
+opt-level = 3 # Full optimizations
+debug = true  # Retain debug information even in release. Manually strip this out later
+lto = true    # Enables LTO
 
 [features]
 
