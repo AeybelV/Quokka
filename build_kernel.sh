@@ -31,6 +31,9 @@ while getopts "t:a:m:" opt; do
     esac
 done
 
+OUTPUT_DIR="target/${RUST_TARGET}/${BUILD_MODE}"
+OBJCOPY="${ABI}-objcopy"
+
 # Validate build mode
 if [[ "${BUILD_MODE}" != "release" && "${BUILD_MODE}" != "debug" ]]; then
     echo "Invalid build mode: ${BUILD_MODE}"
@@ -61,7 +64,6 @@ fi
 # Convert the ELF file to binary
 echo "Converting ELF to binary using ${OBJCOPY}"
 timestamp=$(date --utc +%Y%m%d_%H%M%SZ)
-
 KERNEL_BUILD_DIR="kernel_output/${RUST_TARGET}"
 KERNEL_OUTPUT="${KERNEL_BUILD_DIR}/${OUTPUT_FILE}-${RUST_TARGET}_${timestamp}.bin"
 KERNEL_OUTPUT_ELF="${KERNEL_BUILD_DIR}/${OUTPUT_FILE}-${RUST_TARGET}_${timestamp}.elf"
