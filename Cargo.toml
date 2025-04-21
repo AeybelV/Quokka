@@ -26,8 +26,11 @@ lto = true    # Enables LTO
 
 [features]
 
+#Subsystems
+serialdevice = []
+
 # UART
-pl011 = []                        # Enables PL011 Support
+pl011 = ["serialdevice"]                        # Enables PL011 Support
 
 # Architectures
 arch_arm = [] # ARM32 such as ARMv7-A, which implements AArch32
