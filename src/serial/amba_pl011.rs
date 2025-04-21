@@ -1,4 +1,14 @@
 use crate::serial::serial::Serial;
+// Copyright (c) 2025 Aeybel Varghese
+//
+// amba_pl011.rs
+//
+// Minimal SerialDevice driver for the AMBA PL011 UART Peripheral
+//
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
 use volatile_register::{RO, RW, WO};
 
 #[repr(C)]

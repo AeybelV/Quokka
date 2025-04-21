@@ -2,6 +2,12 @@
 name = "quokka"
 version = "0.1.0"
 edition = "2021"
+authors = ["Aeybel Varghese <aeybelvarghese@gmail.com>"]
+description = "Quokka kernel"
+license = "MPL-2.0"
+repository = "https://github.com/AeybelV/Quokka/" 
+homepage = "https://github.com/AeybelV/Quokka/"
+readme = "README.md"
 
 [dependencies]
 volatile-register = "0.2.2"
