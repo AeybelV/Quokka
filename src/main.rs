@@ -11,9 +11,14 @@
 #![no_std]
 #![no_main]
 
+mod ktest;
 mod serial;
 use core::panic::PanicInfo;
-use serial::{serial::Serial, SystemConsole};
+use ktest::{run_all_ktests, KernelTest, KernelTestRegistry};
+use serial::{
+    amba_pl011::{PL011WriteByteTest, PL011, PL011_UART_BASE},
+    SerialDevice,
+};
 
 // A panic handler function
 #[panic_handler]
@@ -23,10 +28,7 @@ fn panic(_info: &PanicInfo) -> ! {
 
 #[no_mangle]
 pub extern "C" fn _start() -> ! {
-    let serial = SystemConsole::init();
-    serial.enable();
-    serial.write_string("\nBooting the Quokka Kernel...\n\n");
-    serial.write_string("[Welcome to Quokka!]\n");
-
+    let uart_test = PL011WriteByteTest;
+    let result = uart_test.run();
     loop {}
 }

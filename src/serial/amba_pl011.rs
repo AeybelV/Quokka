@@ -1,4 +1,3 @@
-use crate::serial::serial::Serial;
 // Copyright (c) 2025 Aeybel Varghese
 //
 // amba_pl011.rs
@@ -9,10 +8,36 @@ use crate::serial::serial::Serial;
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
+use crate::ktest::{KernelTest, KernelTestResult};
+
+use super::SerialDevice;
 use volatile_register::{RO, RW, WO};
 
+// ========== PL011 Device Driver ==========
+
 #[repr(C)]
-pub struct PL011Uart {
+/// PrimeCell UART (PL011) AMBA Registers
+///
+/// * `dr`: Data Register
+/// * `rsr_ecr`: Receive Status/Error Clear Register
+/// * `_reserved1`:  Reserved
+/// * `fr`:  Flag Register
+/// * `_reserved2`:  Reserved
+/// * `ilpr`: IrDA Low-Power Register
+/// * `ibrd`: Integer Baud Rate Register
+/// * `fbrd`: Fractional Baud Rate Register
+/// * `lcr_h`: Line Control Register
+/// * `cr`:  Control Register
+/// * `ifls`: Interrupt FIFO Level Select Register
+/// * `imsc`: Interrupt Mask Set/Clear Register
+/// * `ris`:  Raw Interrupt Status Register
+/// * `mis`:  Masked Interrupt Status Register
+/// * `icr`: Interrupt Clear Register
+/// * `dmacr`: DMA Control Register
+/// * `_reserved3`:  Reserved
+/// * `periph_id`:  Peripheral ID Registers
+/// * `pcell_id`: PrimeCell ID Registers
+pub struct PL011Regs {
     pub dr: RW<u32>,             // 0x000: Data Register
     pub rsr_ecr: RW<u32>,        // 0x004: Receive Status/Error Clear Register
     _reserved1: [u8; 0x10],      // 0x008 - 0x017: Reserved
@@ -35,8 +60,8 @@ pub struct PL011Uart {
 }
 
 /// Base address of the UART0 register for the qemu-virt.
-// TODO: This must be removed to be hardware agnostic
-const PL011_UART_BASE: u32 = 0x09000000;
+// TODO: [Serial:PL011] This must be removed to be hardware agnostic
+pub const PL011_UART_BASE: u32 = 0x09000000;
 
 /// Masks for the UARTFR (Flag Register)
 pub mod fr_masks {
@@ -58,39 +83,97 @@ pub mod cr_masks {
     pub const RXE: u32 = 1 << 9; // Receive Enable
 }
 
-impl Serial for PL011Uart {
-    fn init() -> &'static Self {
-        unsafe { &*(PL011_UART_BASE as *const PL011Uart) }
+/// PL011 Device
+///
+/// * `regs`: MIO Device Registers
+pub struct PL011 {
+    regs: &'static mut PL011Regs,
+}
+
+impl PL011 {
+    /// Instatiates a MIO PL011 at the specified MIO base address for the Peripheral
+    ///
+    /// * `base_addr`: MIO Base address of the peripheral
+    pub fn new(base_addr: u32) -> Self {
+        Self {
+            regs: unsafe { &mut *(base_addr as *mut PL011Regs) },
+        }
     }
 
-    /// Transmit a character
-    fn write_byte(&self, c: u8) {
+    /// Transmits a byte
+    ///
+    /// * `c`: Character to write
+    fn pl011_write_byte(&self, c: u8) {
         unsafe {
             // Wait until the UART is not full
-            while self.fr.read() & fr_masks::TXFF != 0 {}
-            self.dr.write(c as u32);
+            while self.regs.fr.read() & fr_masks::TXFF != 0 {}
+            self.regs.dr.write(c as u32);
         }
     }
 
     /// Receive a character
-    fn read_byte(&self) -> u8 {
+    fn pl011_read_byte(&self) -> u8 {
         // Wait until the UART is not empty
-        while self.fr.read() & fr_masks::RXFE != 0 {}
-        self.dr.read() as u8
+        while self.regs.fr.read() & fr_masks::RXFE != 0 {}
+        self.regs.dr.read() as u8
     }
 
     /// Enable UART
-    fn enable(&self) {
+    fn pl011_enable(&self) {
         unsafe {
-            self.cr
+            self.regs
+                .cr
                 .write(cr_masks::UARTEN | cr_masks::TXE | cr_masks::RXE);
         }
     }
 
     /// Disable UART
-    fn disable(&self) {
+    fn pl011_disable(&self) {
         unsafe {
-            self.cr.write(0);
+            self.regs.cr.write(0);
         }
     }
 }
+
+// ========== ========== ==========
+
+// ========== Serial Device ==========
+
+// Implements the SerialDevice trait to expose it to the SerialDevice subsystem
+impl SerialDevice for PL011 {
+    fn init(&self) {
+        // Does nothing for now
+    }
+    fn write_byte(&self, byte: u8) {
+        self.pl011_write_byte(byte);
+    }
+    fn read_byte(&self) -> Option<u8> {
+        Some(self.pl011_read_byte())
+    }
+    fn enable(&self) {
+        self.pl011_enable();
+    }
+    fn disable(&self) {
+        self.pl011_disable();
+    }
+}
+
+// ========== ========== ==========
+
+// ========== Tests ==========
+
+pub struct PL011WriteByteTest;
+
+impl KernelTest for PL011WriteByteTest {
+    fn name(&self) -> &'static str {
+        "Tests the PL011"
+    }
+
+    fn run(&self) -> KernelTestResult {
+        let uart0 = PL011::new(PL011_UART_BASE);
+        uart0.write_byte('a' as u8);
+        KernelTestResult::pass(self.name())
+    }
+}
+
+// ========== ========== ==========

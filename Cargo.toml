@@ -35,10 +35,7 @@ pl011 = ["serialdevice"]                        # Enables PL011 Support
 # Architectures
 arch_arm = [] # ARM32 such as ARMv7-A, which implements AArch32
 
-# System Console
-system_console_pl011 = ["pl011"]  # Enables the PL011 as the system console
-
 # Predefined machines
 qemu-system-arm_virt = ["arch_arm", "pl011"] # Targets the "virt" on qemu-system-arm
 
-default = ["qemu-system-arm_virt","system_console_pl011" ]
+default = ["qemu-system-arm_virt" ]
